@@ -4,7 +4,20 @@
 
 #include <string>
 
-class Person {};
+class Person {
+  public:
+    enum class Status { SUSCEPTIBLE, INFECTIOUS, RECOVERED, VACCINATED };
+
+    Person();
+    bool is_infectious() const;
+    bool is_susceptible() const;
+    bool is_recovered() const;
+    bool is_vaccinated() const;
+
+  private:
+    Status status;
+    int days_remaining;
+};
 
 class Disease {};
 
