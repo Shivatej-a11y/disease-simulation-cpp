@@ -19,7 +19,15 @@ class Person {
     int days_remaining;
 };
 
-class Disease {};
+class Disease {
+  public:
+    Disease(int duration, double transmissibility);
+    int getDuration() const;
+    double getTransmissibility() const;
+  private:
+    int duration;
+    double transmissibility;
+};
 
 class Population {};
 
