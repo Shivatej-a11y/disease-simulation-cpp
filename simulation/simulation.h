@@ -4,12 +4,6 @@
 
 #include <string>
 
-class Person {};
-
-class Disease {};
-
-class Population {};
-
 class Simulation {
 public:
   Simulation(std::string in_file = "disease_in.ini");
