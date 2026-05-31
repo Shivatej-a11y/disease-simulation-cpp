@@ -7,6 +7,9 @@ include_directories(include)
 
 add_executable(hpc_disease_simulation
         simulation/main.cpp
+        simulation/Person.cpp
+        simulation/Disease.cpp
+        simulation/Population.cpp
         simulation/simulation.cpp)
 
 
