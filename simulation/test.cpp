@@ -62,3 +62,19 @@ TEST_CASE("Infectious person recovers after disease duration") {
     person.progress_one_day(3);
     CHECK(person.is_recovered());
 }
+
+TEST_CASE("Disease stores configured values") {
+    Disease disease("Corona", 5, 0.1);
+
+    CHECK(disease.get_name() == "Corona");
+    CHECK(disease.get_duration() == 5);
+    CHECK(disease.get_transmissibility() == doctest::Approx(0.1));
+}
+
+TEST_CASE("Disease has default values") {
+    Disease disease;
+
+    CHECK(disease.get_name() == "unknown");
+    CHECK(disease.get_duration() == 0);
+    CHECK(disease.get_transmissibility() == doctest::Approx(0.0));
+}
