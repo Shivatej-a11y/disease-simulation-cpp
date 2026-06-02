@@ -11,6 +11,7 @@ add_library(disease_core
         simulation/simulation.cpp
         simulation/Person.cpp
         simulation/Disease.cpp
+        simulation/Population.cpp
 )
 
 add_executable(hpc_disease_simulation

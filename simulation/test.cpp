@@ -79,3 +79,60 @@ TEST_CASE("Disease has default values") {
     CHECK(disease.get_duration() == 0);
     CHECK(disease.get_transmissibility() == doctest::Approx(0.0));
 }
+
+TEST_CASE("Population stores configured values") {
+    Population population("Deggendorf", 100, 0.3, false);
+
+    CHECK(population.get_name() == "Deggendorf");
+    CHECK(population.get_size() == 100);
+    CHECK(population.get_vaccination_rate() == doctest::Approx(0.3));
+    CHECK_FALSE(population.has_patient_zero());
+}
+
+TEST_CASE("Population initializes correct number of vaccinated persons") {
+    Population population("Deggendorf", 10, 0.3, false);
+
+    CHECK(population.count_vaccinated() == 3);
+    CHECK(population.count_susceptible() == 7);
+    CHECK(population.count_infectious() == 0);
+    CHECK(population.count_recovered() == 0);
+}
+
+TEST_CASE("Population initializes patient zero when enabled") {
+    Population population("Deggendorf", 10, 0.2, true);
+
+    CHECK(population.count_vaccinated() == 2);
+    CHECK(population.count_infectious() == 1);
+    CHECK(population.count_susceptible() == 7);
+    CHECK(population.count_recovered() == 0);
+    CHECK(population.has_infectious());
+}
+
+TEST_CASE("Population without patient zero has no infectious persons") {
+    Population population("Deggendorf", 10, 0.2, false);
+
+    CHECK(population.count_vaccinated() == 2);
+    CHECK(population.count_infectious() == 0);
+    CHECK(population.count_susceptible() == 8);
+    CHECK_FALSE(population.has_infectious());
+}
+
+TEST_CASE("Fully vaccinated population does not create patient zero") {
+    Population population("Deggendorf", 10, 1.0, true);
+
+    CHECK(population.count_vaccinated() == 10);
+    CHECK(population.count_infectious() == 0);
+    CHECK(population.count_susceptible() == 0);
+    CHECK_FALSE(population.has_infectious());
+}
+
+TEST_CASE("Population handles empty population") {
+    Population population("Empty", 0, 0.5, true);
+
+    CHECK(population.get_size() == 0);
+    CHECK(population.count_vaccinated() == 0);
+    CHECK(population.count_infectious() == 0);
+    CHECK(population.count_susceptible() == 0);
+    CHECK(population.count_recovered() == 0);
+    CHECK_FALSE(population.has_infectious());
+}
