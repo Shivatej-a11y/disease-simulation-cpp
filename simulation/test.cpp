@@ -4,6 +4,7 @@
 #include "./Person.h"
 #include "./Disease.h"
 #include "./simulation.h"
+#include "./Population.h"
 
 TEST_CASE("Test simulation class") {
     Simulation sim = Simulation();
