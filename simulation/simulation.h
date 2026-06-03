@@ -8,6 +8,15 @@
 #include "Disease.h"
 #include "Population.h"
 
+struct TimestepRecord {
+    std::string population_name;
+    int run;
+    int infectious;
+    int recovered;
+    int susceptible;
+    int vaccinated;
+};
+
 class Simulation {
 public:
     explicit Simulation(std::string in_file = "disease_in.ini");
@@ -22,10 +31,13 @@ public:
 
     void run(int max_steps = 10000);
 
+    bool write_disease_details_csv(const std::string& output_file = "disease_details.csv") const;
+
     const Disease& get_disease() const;
 
     int get_total_steps() const;
     int get_population_count() const;
+    int get_details_record_count() const;
 
     int count_susceptible() const;
     int count_infectious() const;
@@ -40,6 +52,9 @@ private:
     std::vector<Population> populations;
     int total_steps;
     std::mt19937 rng;
+    std::vector<TimestepRecord> details_records;
+
+    void record_current_state(int run_number);
 };
 
 #endif // HPC_DISEASE_SIMULATION_H_

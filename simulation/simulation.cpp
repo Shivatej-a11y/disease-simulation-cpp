@@ -1,5 +1,6 @@
 #include "simulation.h"
 
+#include <fstream>
 #include <iostream>
 #include <string>
 
@@ -10,7 +11,8 @@ Simulation::Simulation(std::string in_file)
       disease(),
       populations(),
       total_steps(0),
-      rng(42) {}
+      rng(42),
+      details_records() {}
 
 void Simulation::start() {
     std::cout << "Starting simulation..." << std::endl;
@@ -21,6 +23,7 @@ void Simulation::start() {
     }
 
     run();
+    write_disease_details_csv();
 
     std::cout << "Number of timesteps until disease extinction: "
               << total_steps << std::endl;
@@ -77,6 +80,7 @@ bool Simulation::load_config() {
     }
 
     total_steps = 0;
+    details_records.clear();
     rng.seed(42);
 
     return true;
@@ -93,10 +97,16 @@ void Simulation::add_population(const Population& population) {
 void Simulation::clear_populations() {
     populations.clear();
     total_steps = 0;
+    details_records.clear();
 }
 
 void Simulation::run(int max_steps) {
     total_steps = 0;
+    details_records.clear();
+
+    const int run_number = 0;
+
+    record_current_state(run_number);
 
     while (has_infectious() && total_steps < max_steps) {
         for (Population& population : populations) {
@@ -104,7 +114,44 @@ void Simulation::run(int max_steps) {
         }
 
         total_steps++;
+        record_current_state(run_number);
     }
+}
+
+void Simulation::record_current_state(int run_number) {
+    for (const Population& population : populations) {
+        TimestepRecord record;
+
+        record.population_name = population.get_name();
+        record.run = run_number;
+        record.infectious = population.count_infectious();
+        record.recovered = population.count_recovered();
+        record.susceptible = population.count_susceptible();
+        record.vaccinated = population.count_vaccinated();
+
+        details_records.push_back(record);
+    }
+}
+
+bool Simulation::write_disease_details_csv(const std::string& output_file) const {
+    std::ofstream file(output_file);
+
+    if (!file.is_open()) {
+        return false;
+    }
+
+    file << "name,run,infectious,recovered,susceptiple,vaccinated\n";
+
+    for (const TimestepRecord& record : details_records) {
+        file << record.population_name << ","
+             << record.run << ","
+             << record.infectious << ","
+             << record.recovered << ","
+             << record.susceptible << ","
+             << record.vaccinated << "\n";
+    }
+
+    return true;
 }
 
 const Disease& Simulation::get_disease() const {
@@ -117,6 +164,10 @@ int Simulation::get_total_steps() const {
 
 int Simulation::get_population_count() const {
     return static_cast<int>(populations.size());
+}
+
+int Simulation::get_details_record_count() const {
+    return static_cast<int>(details_records.size());
 }
 
 int Simulation::count_susceptible() const {

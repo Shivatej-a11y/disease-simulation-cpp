@@ -357,3 +357,54 @@ TEST_CASE("Simulation can run after loading ini configuration") {
 
     std::remove(file_name.c_str());
 }
+
+TEST_CASE("Simulation records details during run") {
+    Simulation simulation;
+
+    Disease disease("ShortDisease", 1, 0.0);
+    Population population("Deggendorf", 10, 0.0, true);
+
+    simulation.set_disease(disease);
+    simulation.add_population(population);
+
+    simulation.run();
+
+    CHECK(simulation.get_total_steps() == 1);
+    CHECK(simulation.get_details_record_count() == 2);
+}
+
+TEST_CASE("Simulation writes disease details csv") {
+    const std::string file_name = "test_disease_details.csv";
+
+    Simulation simulation;
+
+    Disease disease("ShortDisease", 1, 0.0);
+    Population population("Deggendorf", 10, 0.0, true);
+
+    simulation.set_disease(disease);
+    simulation.add_population(population);
+
+    simulation.run();
+
+    CHECK(simulation.write_disease_details_csv(file_name));
+
+    std::ifstream file(file_name);
+
+    REQUIRE(file.is_open());
+
+    std::string header;
+    std::string first_row;
+    std::string second_row;
+
+    std::getline(file, header);
+    std::getline(file, first_row);
+    std::getline(file, second_row);
+
+    CHECK(header == "name,run,infectious,recovered,susceptiple,vaccinated");
+    CHECK(first_row == "Deggendorf,0,1,0,9,0");
+    CHECK(second_row == "Deggendorf,0,0,1,9,0");
+
+    file.close();
+
+    std::remove(file_name.c_str());
+}
