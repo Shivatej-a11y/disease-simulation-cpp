@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HPC_DISEASE_DISEASE_H_
+#define HPC_DISEASE_DISEASE_H_
 
 #include <string>
 
@@ -16,3 +17,5 @@ private:
     int duration;
     double transmissibility;
 };
+
+#endif // HPC_DISEASE_PERSON_H

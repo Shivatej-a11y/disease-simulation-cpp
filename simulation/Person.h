@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HPC_DISEASE_PERSON_H_
+#define HPC_DISEASE_PERSON_H_
 
 class Person {
 public:
@@ -28,3 +29,5 @@ private:
     Status status;
     int days_infected;
 };
+
+#endif // HPC_DISEASE_PERSON_H

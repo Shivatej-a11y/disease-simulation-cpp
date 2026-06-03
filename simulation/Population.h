@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HPC_DISEASE_POPULATION_H_
+#define HPC_DISEASE_POPULATION_H_
 
 #include <random>
 #include <string>
@@ -37,3 +38,5 @@ private:
 
     void initialize();
 };
+
+#endif // HPC_DISEASE_POPULATION_H_

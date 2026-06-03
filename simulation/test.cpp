@@ -193,3 +193,74 @@ TEST_CASE("Recovered person is not infected again during population spread") {
     CHECK(person.is_recovered());
     CHECK_FALSE(person.is_infectious());
 }
+
+TEST_CASE("Simulation stores disease and populations") {
+    Simulation simulation;
+
+    Disease disease("TestDisease", 5, 0.1);
+    Population population("Deggendorf", 10, 0.2, true);
+
+    simulation.set_disease(disease);
+    simulation.add_population(population);
+
+    CHECK(simulation.get_population_count() == 1);
+    CHECK(simulation.count_vaccinated() == 2);
+    CHECK(simulation.count_infectious() == 1);
+    CHECK(simulation.count_susceptible() == 7);
+    CHECK(simulation.has_infectious());
+}
+
+TEST_CASE("Simulation runs until disease extinction") {
+    Simulation simulation;
+
+    Disease disease("ShortDisease", 1, 0.0);
+    Population population("Deggendorf", 10, 0.0, true);
+
+    simulation.set_disease(disease);
+    simulation.add_population(population);
+    simulation.run();
+
+    CHECK(simulation.get_total_steps() == 1);
+    CHECK(simulation.count_infectious() == 0);
+    CHECK(simulation.count_recovered() == 1);
+    CHECK(simulation.count_susceptible() == 9);
+    CHECK_FALSE(simulation.has_infectious());
+}
+
+TEST_CASE("Simulation does not run when there are no infectious persons") {
+    Simulation simulation;
+
+    Disease disease("TestDisease", 5, 0.1);
+    Population population("Deggendorf", 10, 0.2, false);
+
+    simulation.set_disease(disease);
+    simulation.add_population(population);
+    simulation.run();
+
+    CHECK(simulation.get_total_steps() == 0);
+    CHECK(simulation.count_infectious() == 0);
+    CHECK_FALSE(simulation.has_infectious());
+}
+
+TEST_CASE("Simulation handles multiple populations") {
+    Simulation simulation;
+
+    Disease disease("ShortDisease", 1, 0.0);
+    Population population_one("Deggendorf", 10, 0.0, true);
+    Population population_two("Munich", 20, 0.5, false);
+
+    simulation.set_disease(disease);
+    simulation.add_population(population_one);
+    simulation.add_population(population_two);
+
+    CHECK(simulation.get_population_count() == 2);
+    CHECK(simulation.count_vaccinated() == 10);
+    CHECK(simulation.count_infectious() == 1);
+    CHECK(simulation.count_susceptible() == 19);
+
+    simulation.run();
+
+    CHECK(simulation.get_total_steps() == 1);
+    CHECK(simulation.count_infectious() == 0);
+    CHECK(simulation.count_recovered() == 1);
+}
