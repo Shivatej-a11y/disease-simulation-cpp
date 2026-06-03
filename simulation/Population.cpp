@@ -25,23 +25,42 @@ void Population::initialize() {
     persons.clear();
     persons.resize(size);
 
-    int vaccinated_count = static_cast<int>(std::round(size * vaccination_rate));
-
-    if (vaccinated_count > size) {
-        vaccinated_count = size;
+    if (size <= 0) {
+        return;
     }
 
-    for (int i = 0; i < vaccinated_count; ++i) {
-        persons[i].vaccinate();
-    }
+    int patient_zero_index = -1;
 
     if (patient_zero) {
-        for (Person& person : persons) {
-            if (person.is_susceptible()) {
-                person.infect();
-                break;
-            }
+        patient_zero_index = 0;
+        persons[patient_zero_index].infect();
+    }
+
+    int target_vaccinated_count =
+        static_cast<int>(std::round(size * vaccination_rate));
+
+    int max_vaccinated_count = size;
+
+    if (patient_zero_index != -1) {
+        max_vaccinated_count = size - 1;
+    }
+
+    target_vaccinated_count =
+        std::min(target_vaccinated_count, max_vaccinated_count);
+
+    std::vector<int> candidate_indices;
+
+    for (int i = 0; i < size; ++i) {
+        if (i != patient_zero_index) {
+            candidate_indices.push_back(i);
         }
+    }
+
+    std::mt19937 vaccination_rng(1234);
+    std::shuffle(candidate_indices.begin(), candidate_indices.end(), vaccination_rng);
+
+    for (int i = 0; i < target_vaccinated_count; ++i) {
+        persons[candidate_indices[i]].vaccinate();
     }
 }
 

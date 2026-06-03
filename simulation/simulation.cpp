@@ -1,9 +1,11 @@
 #include "simulation.h"
 
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "INIReader.h"
 
@@ -15,7 +17,8 @@ Simulation::Simulation(std::string in_file)
       simulation_runs(1),
       total_steps(0),
       rng(42),
-      details_records() {}
+      details_records(),
+      summary_records() {}
 
 void Simulation::start() {
     std::cout << "Starting simulation..." << std::endl;
@@ -27,6 +30,7 @@ void Simulation::start() {
 
     run();
     write_disease_details_csv();
+    write_disease_stats_csv();
 
     std::cout << "Number of timesteps until disease extinction: "
               << total_steps << std::endl;
@@ -93,6 +97,7 @@ bool Simulation::load_config() {
 
     total_steps = 0;
     details_records.clear();
+    summary_records.clear();
     rng.seed(42);
 
     return true;
@@ -112,6 +117,7 @@ void Simulation::clear_populations() {
     populations.clear();
     total_steps = 0;
     details_records.clear();
+    summary_records.clear();
 }
 
 void Simulation::set_simulation_runs(int runs) {
@@ -125,6 +131,7 @@ int Simulation::get_simulation_runs() const {
 void Simulation::run(int max_steps) {
     total_steps = 0;
     details_records.clear();
+    summary_records.clear();
 
     for (int run_number = 0; run_number < simulation_runs; ++run_number) {
         run_single(run_number, max_steps);
@@ -147,6 +154,8 @@ void Simulation::run_single(int run_number, int max_steps) {
         total_steps++;
         record_current_state(run_number);
     }
+
+    record_run_summary();
 }
 
 void Simulation::record_current_state(int run_number) {
@@ -162,6 +171,17 @@ void Simulation::record_current_state(int run_number) {
 
         details_records.push_back(record);
     }
+}
+
+void Simulation::record_run_summary() {
+    RunSummaryRecord record;
+
+    record.total_steps = total_steps;
+    record.susceptible = count_susceptible();
+    record.recovered = count_recovered();
+    record.vaccinated = count_vaccinated();
+
+    summary_records.push_back(record);
 }
 
 bool Simulation::write_disease_details_csv(const std::string& output_file) const {
@@ -185,6 +205,76 @@ bool Simulation::write_disease_details_csv(const std::string& output_file) const
     return true;
 }
 
+bool Simulation::write_disease_stats_csv(const std::string& output_file) const {
+    std::ofstream file(output_file);
+
+    if (!file.is_open()) {
+        return false;
+    }
+
+    std::vector<int> total_steps_values;
+    std::vector<int> susceptible_values;
+    std::vector<int> recovered_values;
+    std::vector<int> vaccinated_values;
+
+    for (const RunSummaryRecord& record : summary_records) {
+        total_steps_values.push_back(record.total_steps);
+        susceptible_values.push_back(record.susceptible);
+        recovered_values.push_back(record.recovered);
+        vaccinated_values.push_back(record.vaccinated);
+    }
+
+    file << "key,mean,std\n";
+
+    file << "total_steps,"
+         << calculate_mean(total_steps_values) << ","
+         << calculate_standard_deviation(total_steps_values) << "\n";
+
+    file << "susceptiple_persons,"
+         << calculate_mean(susceptible_values) << ","
+         << calculate_standard_deviation(susceptible_values) << "\n";
+
+    file << "recovered_persons,"
+         << calculate_mean(recovered_values) << ","
+         << calculate_standard_deviation(recovered_values) << "\n";
+
+    file << "vaccinated_persons,"
+         << calculate_mean(vaccinated_values) << ","
+         << calculate_standard_deviation(vaccinated_values) << "\n";
+
+    return true;
+}
+
+double Simulation::calculate_mean(const std::vector<int>& values) {
+    if (values.empty()) {
+        return 0.0;
+    }
+
+    double sum = 0.0;
+
+    for (int value : values) {
+        sum += value;
+    }
+
+    return sum / static_cast<double>(values.size());
+}
+
+double Simulation::calculate_standard_deviation(const std::vector<int>& values) {
+    if (values.empty()) {
+        return 0.0;
+    }
+
+    double mean = calculate_mean(values);
+    double squared_difference_sum = 0.0;
+
+    for (int value : values) {
+        double difference = static_cast<double>(value) - mean;
+        squared_difference_sum += difference * difference;
+    }
+
+    return std::sqrt(squared_difference_sum / static_cast<double>(values.size()));
+}
+
 const Disease& Simulation::get_disease() const {
     return disease;
 }
@@ -199,6 +289,10 @@ int Simulation::get_population_count() const {
 
 int Simulation::get_details_record_count() const {
     return static_cast<int>(details_records.size());
+}
+
+int Simulation::get_summary_record_count() const {
+    return static_cast<int>(summary_records.size());
 }
 
 int Simulation::count_susceptible() const {

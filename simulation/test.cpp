@@ -120,13 +120,14 @@ TEST_CASE("Population without patient zero has no infectious persons") {
     CHECK_FALSE(population.has_infectious());
 }
 
-TEST_CASE("Fully vaccinated population does not create patient zero") {
+TEST_CASE("Fully vaccinated population with patient zero creates one infectious person") {
     Population population("Deggendorf", 10, 1.0, true);
 
-    CHECK(population.count_vaccinated() == 10);
-    CHECK(population.count_infectious() == 0);
+    CHECK(population.count_infectious() == 1);
+    CHECK(population.count_vaccinated() == 9);
     CHECK(population.count_susceptible() == 0);
-    CHECK_FALSE(population.has_infectious());
+    CHECK(population.count_recovered() == 0);
+    CHECK(population.has_infectious());
 }
 
 TEST_CASE("Population handles empty population") {
@@ -175,15 +176,15 @@ TEST_CASE("Disease spreads to susceptible person with full transmissibility") {
     CHECK(population.count_susceptible() == 0);
 }
 
-TEST_CASE("Fully vaccinated population does not spread disease") {
+TEST_CASE("Fully vaccinated population only keeps patient zero infectious") {
     Population population("Deggendorf", 10, 1.0, true);
     Disease disease("HighlyInfectious", 5, 1.0);
     std::mt19937 rng(42);
 
     population.simulate_one_day(disease, rng);
 
-    CHECK(population.count_infectious() == 0);
-    CHECK(population.count_vaccinated() == 10);
+    CHECK(population.count_infectious() == 1);
+    CHECK(population.count_vaccinated() == 9);
     CHECK(population.count_susceptible() == 0);
 }
 
