@@ -3,7 +3,7 @@
 
 #include <cstdio>
 #include <fstream>
-
+#include <string>
 #include "./Person.h"
 #include "./Disease.h"
 #include "./simulation.h"

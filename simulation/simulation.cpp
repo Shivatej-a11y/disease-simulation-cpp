@@ -1,5 +1,6 @@
 #include "simulation.h"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -9,7 +10,9 @@
 Simulation::Simulation(std::string in_file)
     : input_file(in_file),
       disease(),
+      initial_populations(),
       populations(),
+      simulation_runs(1),
       total_steps(0),
       rng(42),
       details_records() {}
@@ -45,9 +48,18 @@ bool Simulation::load_config() {
 
     clear_populations();
 
+    simulation_runs =
+        static_cast<int>(reader.GetInteger("global", "simulation_runs", 1));
+
+    if (simulation_runs < 1) {
+        simulation_runs = 1;
+    }
+
     std::string disease_name = reader.Get("disease", "name", "unknown");
-    int disease_duration = static_cast<int>(reader.GetInteger("disease", "duration", 0));
-    double transmissibility = reader.GetReal("disease", "transmissibility", 0.0);
+    int disease_duration =
+        static_cast<int>(reader.GetInteger("disease", "duration", 0));
+    double transmissibility =
+        reader.GetReal("disease", "transmissibility", 0.0);
 
     disease = Disease(disease_name, disease_duration, transmissibility);
 
@@ -91,20 +103,39 @@ void Simulation::set_disease(const Disease& new_disease) {
 }
 
 void Simulation::add_population(const Population& population) {
+    initial_populations.push_back(population);
     populations.push_back(population);
 }
 
 void Simulation::clear_populations() {
+    initial_populations.clear();
     populations.clear();
     total_steps = 0;
     details_records.clear();
+}
+
+void Simulation::set_simulation_runs(int runs) {
+    simulation_runs = std::max(1, runs);
+}
+
+int Simulation::get_simulation_runs() const {
+    return simulation_runs;
 }
 
 void Simulation::run(int max_steps) {
     total_steps = 0;
     details_records.clear();
 
-    const int run_number = 0;
+    for (int run_number = 0; run_number < simulation_runs; ++run_number) {
+        run_single(run_number, max_steps);
+    }
+}
+
+void Simulation::run_single(int run_number, int max_steps) {
+    populations = initial_populations;
+    total_steps = 0;
+
+    rng.seed(42 + run_number);
 
     record_current_state(run_number);
 

@@ -29,6 +29,9 @@ public:
     void add_population(const Population& population);
     void clear_populations();
 
+    void set_simulation_runs(int runs);
+    int get_simulation_runs() const;
+
     void run(int max_steps = 10000);
 
     bool write_disease_details_csv(const std::string& output_file = "disease_details.csv") const;
@@ -49,11 +52,17 @@ public:
 private:
     std::string input_file;
     Disease disease;
+
+    std::vector<Population> initial_populations;
     std::vector<Population> populations;
+
+    int simulation_runs;
     int total_steps;
+
     std::mt19937 rng;
     std::vector<TimestepRecord> details_records;
 
+    void run_single(int run_number, int max_steps);
     void record_current_state(int run_number);
 };
 
