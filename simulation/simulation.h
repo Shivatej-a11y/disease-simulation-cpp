@@ -14,11 +14,15 @@ public:
 
     void start();
 
+    bool load_config();
+
     void set_disease(const Disease& disease);
     void add_population(const Population& population);
     void clear_populations();
 
     void run(int max_steps = 10000);
+
+    const Disease& get_disease() const;
 
     int get_total_steps() const;
     int get_population_count() const;

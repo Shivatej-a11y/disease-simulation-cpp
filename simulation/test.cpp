@@ -1,6 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "../include/doctest.h"
 
+#include <cstdio>
+#include <fstream>
+
 #include "./Person.h"
 #include "./Disease.h"
 #include "./simulation.h"
@@ -263,4 +266,94 @@ TEST_CASE("Simulation handles multiple populations") {
     CHECK(simulation.get_total_steps() == 1);
     CHECK(simulation.count_infectious() == 0);
     CHECK(simulation.count_recovered() == 1);
+}
+
+TEST_CASE("Simulation loads configuration from ini file") {
+    const std::string file_name = "test_disease_in.ini";
+
+    std::ofstream config_file(file_name);
+
+    config_file << "[global]\n";
+    config_file << "simulation_name = test_simulation\n";
+    config_file << "num_populations = 2\n";
+    config_file << "simulation_runs = 1\n\n";
+
+    config_file << "[disease]\n";
+    config_file << "name = Corona\n";
+    config_file << "duration = 5\n";
+    config_file << "transmissibility = 0.1\n\n";
+
+    config_file << "[population_1]\n";
+    config_file << "name = Deggendorf\n";
+    config_file << "size = 10\n";
+    config_file << "vaccination_rate = 0.2\n";
+    config_file << "patient_0 = true\n\n";
+
+    config_file << "[population_2]\n";
+    config_file << "name = Munich\n";
+    config_file << "size = 20\n";
+    config_file << "vaccination_rate = 0.5\n";
+    config_file << "patient_0 = false\n";
+
+    config_file.close();
+
+    Simulation simulation(file_name);
+
+    CHECK(simulation.load_config());
+
+    CHECK(simulation.get_disease().get_name() == "Corona");
+    CHECK(simulation.get_disease().get_duration() == 5);
+    CHECK(simulation.get_disease().get_transmissibility() == doctest::Approx(0.1));
+
+    CHECK(simulation.get_population_count() == 2);
+    CHECK(simulation.count_vaccinated() == 12);
+    CHECK(simulation.count_infectious() == 1);
+    CHECK(simulation.count_susceptible() == 17);
+    CHECK(simulation.count_recovered() == 0);
+    CHECK(simulation.has_infectious());
+
+    std::remove(file_name.c_str());
+}
+
+TEST_CASE("Simulation returns false when ini file is missing") {
+    Simulation simulation("missing_file.ini");
+
+    CHECK_FALSE(simulation.load_config());
+}
+
+TEST_CASE("Simulation can run after loading ini configuration") {
+    const std::string file_name = "test_run_config.ini";
+
+    std::ofstream config_file(file_name);
+
+    config_file << "[global]\n";
+    config_file << "simulation_name = test_run\n";
+    config_file << "num_populations = 1\n";
+    config_file << "simulation_runs = 1\n\n";
+
+    config_file << "[disease]\n";
+    config_file << "name = ShortDisease\n";
+    config_file << "duration = 1\n";
+    config_file << "transmissibility = 0.0\n\n";
+
+    config_file << "[population_1]\n";
+    config_file << "name = Deggendorf\n";
+    config_file << "size = 10\n";
+    config_file << "vaccination_rate = 0.0\n";
+    config_file << "patient_0 = true\n";
+
+    config_file.close();
+
+    Simulation simulation(file_name);
+
+    CHECK(simulation.load_config());
+
+    simulation.run();
+
+    CHECK(simulation.get_total_steps() == 1);
+    CHECK(simulation.count_infectious() == 0);
+    CHECK(simulation.count_recovered() == 1);
+    CHECK(simulation.count_susceptible() == 9);
+
+    std::remove(file_name.c_str());
 }
