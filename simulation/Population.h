@@ -1,8 +1,10 @@
 #pragma once
 
+#include <random>
 #include <string>
 #include <vector>
 
+#include "Disease.h"
 #include "Person.h"
 
 class Population {
@@ -22,7 +24,11 @@ public:
 
     bool has_infectious() const;
 
+    void simulate_one_day(const Disease& disease, std::mt19937& rng);
+
 private:
+    static constexpr int CONTACTS_PER_DAY = 6;
+
     std::string name;
     int size;
     double vaccination_rate;

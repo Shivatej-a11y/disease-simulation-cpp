@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <random>
+#include <vector>
 
 Population::Population()
     : name("unknown"),
@@ -109,4 +111,57 @@ int Population::count_vaccinated() const {
 
 bool Population::has_infectious() const {
     return count_infectious() > 0;
+}
+
+void Population::simulate_one_day(const Disease& disease, std::mt19937& rng) {
+    if (size <= 0) {
+        return;
+    }
+
+    std::vector<int> infectious_indices;
+
+    for (int i = 0; i < size; ++i) {
+        if (persons[i].is_infectious()) {
+            infectious_indices.push_back(i);
+        }
+    }
+
+    if (infectious_indices.empty()) {
+        return;
+    }
+
+    std::uniform_int_distribution<int> person_distribution(0, size - 1);
+    std::uniform_real_distribution<double> probability_distribution(0.0, 1.0);
+
+    std::vector<int> newly_infected_indices;
+
+    for (int infectious_index : infectious_indices) {
+        for (int contact = 0; contact < CONTACTS_PER_DAY; ++contact) {
+            int contacted_index = person_distribution(rng);
+
+            if (size > 1) {
+                while (contacted_index == infectious_index) {
+                    contacted_index = person_distribution(rng);
+                }
+            }
+
+            Person& contacted_person = persons[contacted_index];
+
+            if (contacted_person.is_susceptible()) {
+                double probability = probability_distribution(rng);
+
+                if (probability < disease.get_transmissibility()) {
+                    newly_infected_indices.push_back(contacted_index);
+                }
+            }
+        }
+    }
+
+    for (int infectious_index : infectious_indices) {
+        persons[infectious_index].progress_one_day(disease.get_duration());
+    }
+
+    for (int newly_infected_index : newly_infected_indices) {
+        persons[newly_infected_index].infect();
+    }
 }

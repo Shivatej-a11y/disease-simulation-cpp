@@ -136,3 +136,60 @@ TEST_CASE("Population handles empty population") {
     CHECK(population.count_recovered() == 0);
     CHECK_FALSE(population.has_infectious());
 }
+
+TEST_CASE("Disease does not spread when transmissibility is zero") {
+    Population population("Deggendorf", 10, 0.0, true);
+    Disease disease("TestDisease", 5, 0.0);
+    std::mt19937 rng(42);
+
+    population.simulate_one_day(disease, rng);
+
+    CHECK(population.count_infectious() == 1);
+    CHECK(population.count_recovered() == 0);
+    CHECK(population.count_susceptible() == 9);
+}
+
+TEST_CASE("Infectious person recovers after disease duration in population") {
+    Population population("Deggendorf", 10, 0.0, true);
+    Disease disease("ShortDisease", 1, 0.0);
+    std::mt19937 rng(42);
+
+    population.simulate_one_day(disease, rng);
+
+    CHECK(population.count_infectious() == 0);
+    CHECK(population.count_recovered() == 1);
+    CHECK(population.count_susceptible() == 9);
+}
+
+TEST_CASE("Disease spreads to susceptible person with full transmissibility") {
+    Population population("Deggendorf", 2, 0.0, true);
+    Disease disease("HighlyInfectious", 5, 1.0);
+    std::mt19937 rng(42);
+
+    population.simulate_one_day(disease, rng);
+
+    CHECK(population.count_infectious() == 2);
+    CHECK(population.count_susceptible() == 0);
+}
+
+TEST_CASE("Fully vaccinated population does not spread disease") {
+    Population population("Deggendorf", 10, 1.0, true);
+    Disease disease("HighlyInfectious", 5, 1.0);
+    std::mt19937 rng(42);
+
+    population.simulate_one_day(disease, rng);
+
+    CHECK(population.count_infectious() == 0);
+    CHECK(population.count_vaccinated() == 10);
+    CHECK(population.count_susceptible() == 0);
+}
+
+TEST_CASE("Recovered person is not infected again during population spread") {
+    Person person;
+    person.infect();
+    person.recover();
+    person.infect();
+
+    CHECK(person.is_recovered());
+    CHECK_FALSE(person.is_infectious());
+}
