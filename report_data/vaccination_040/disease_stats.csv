@@ -1,0 +1,5 @@
+key,mean,std
+total_steps,71,34.0646
+susceptiple_persons,7381.8,5308.77
+recovered_persons,10618.2,5308.77
+vaccinated_persons,12000,0
