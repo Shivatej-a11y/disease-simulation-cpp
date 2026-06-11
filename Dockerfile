@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY part_1_disease /app/part_1_disease
+COPY . /app/part_1_disease
 
 RUN cmake -S /app/part_1_disease -B /app/build \
     && cmake --build /app/build --target hpc_disease_simulation
