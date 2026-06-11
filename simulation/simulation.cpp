@@ -6,8 +6,21 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 #include "INIReader.h"
+
+namespace {
+std::string make_output_path(const std::string& input_file, const std::string& output_name) {
+    std::filesystem::path input_path(input_file);
+
+    if (input_path.has_parent_path()) {
+        return (input_path.parent_path() / output_name).string();
+    }
+
+    return output_name;
+}
+}
 
 Simulation::Simulation(std::string in_file)
     : input_file(in_file),
@@ -29,8 +42,8 @@ void Simulation::start() {
     }
 
     run();
-    write_disease_details_csv();
-    write_disease_stats_csv();
+    write_disease_details_csv(make_output_path(input_file, "disease_details.csv"));
+    write_disease_stats_csv(make_output_path(input_file, "disease_stats.csv"));
 
     std::cout << "Number of timesteps until disease extinction: "
               << total_steps << std::endl;

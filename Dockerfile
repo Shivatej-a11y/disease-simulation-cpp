@@ -1,11 +1,18 @@
 FROM ubuntu:24.04
 
-# TODO: implement 
-#
-# Requirements:
-#   - Build the hpc_disease_simulation executable using CMake
-#   - The application must read 'disease_in.ini' from /scratch
-#   - All output files must be written to /scratch
-#   - Run with: docker run --rm -v ./:/scratch <image>
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    cmake \
+    g++ \
+    make \
+    && rm -rf /var/lib/apt/lists/*
 
-CMD ["echo", "not implemented"]
+WORKDIR /app
+
+COPY part_1_disease /app/part_1_disease
+
+RUN cmake -S /app/part_1_disease -B /app/build \
+    && cmake --build /app/build --target hpc_disease_simulation
+
+WORKDIR /scratch
+
+ENTRYPOINT ["/app/build/hpc_disease_simulation", "/scratch/disease_in.ini"]
