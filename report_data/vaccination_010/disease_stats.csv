@@ -1,5 +1,5 @@
 key,mean,std
-total_steps,55,2.44949
-susceptiple_persons,2258.8,32.6092
-recovered_persons,24741.2,32.6092
+total_steps,33,1.41421
+susceptiple_persons,11,2.60768
+recovered_persons,26989,2.60768
 vaccinated_persons,3000,0
