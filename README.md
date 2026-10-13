@@ -1,5 +1,7 @@
 # Disease Simulation in C++
 
+[![C++ Build and Test](https://github.com/Shivatej-a11y/disease-simulation-cpp/actions/workflows/cmake-ci.yml/badge.svg)](https://github.com/Shivatej-a11y/disease-simulation-cpp/actions/workflows/cmake-ci.yml)
+
 **An object-oriented disease spread simulator built with C++17, CMake, and automated tests.**
 
 This project models how an infectious disease propagates through a population over time. It was developed as part of an HPC/QC programming lab and extended with configurable simulation parameters, experiment runners, and output data for investigating disease dynamics and herd immunity.
